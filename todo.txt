@@ -1,0 +1,19 @@
+Make code comply with PEP 8
+
+Clean up imports, get rid of program_path variable
+
+Add README and help
+
+make git repo
+
+Make installable with setuputils
+
+Make error class
+
+Make printed error messages better
+
+Do logging
+
+Check for wget, maybe do that in install though
+
+Add tests 
