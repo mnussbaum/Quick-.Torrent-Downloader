@@ -1,3 +1,3 @@
-downloads_folder = '/Users/michaelnussbaum08/Downloads/'
+DOWNLOADS_FOLDER = '/Users/michaelnussbaum08/Downloads/'
 
-program_path = '/Users/michaelnussbaum08/Documents/Other/downloader/'
+PROGRAM_PATH = '/Users/michaelnussbaum08/Documents/Other/downloader/'
