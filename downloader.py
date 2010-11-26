@@ -28,7 +28,6 @@ class Downloader(object):
     def download(self, search_term, desired_item_name):
         """Tries to download something with the desired_item_name from the torrentz results after searching for search_term"""
         #TODO: make this a general search call that can take any search site
-        #search_results is BeautifulSoup of torrentz.com
         search_results = self._torrentz_search(search_term)
         try:
             #results from tracker meta-search
@@ -51,7 +50,7 @@ class Downloader(object):
             if not downloaded:
                 base_file_path = DOWNLOADS_FOLDER
                 file_path = base_file_path + desired_item_name.replace(' ', '') + '.torrent'
-                print 'Downloading from', '%s...' % tracker_name
+                print 'Downloading torrent file from', '%s...' % tracker_name
                 tracker_file = tracker_name + ".py"
                 tracker_path = os.path.join(PROGRAM_PATH, 'trackers', tracker_file)
                 source = imp.load_source('find_url', tracker_path)
@@ -92,7 +91,9 @@ class Downloader(object):
             seeds = cut_description[:space_index]
             seeds = seeds.replace(",", "")
             seeds = int(seeds)
-            if 'flac' not in str(item.category).lower() and 'wma' not in str(item.category).lower() and seeds >= 5:
+            file_type = str(item.category).lower()
+            bad_file_types = ['flac', 'wma']
+            if file_type not in bad_file_types and seeds >= 5:
                 title = item.title
                 title = remove_html_tags(str(title))
                 title = remove_entities(title)
@@ -135,9 +136,8 @@ class Downloader(object):
                         link = str(possible_tracker).split()[1]
                         first_quote = link.index('"') + 1
                         second_quote = link.index('"', first_quote)
-                        link = link[first_quote:second_quote]
-                        #now link is just url of tracker
-                        found_trackers[tracker] = link
+                        tracker_url = link[first_quote:second_quote]
+                        found_trackers[tracker] = tracker_url
         if found_trackers == {}:
             raise DownloaderError('No known trackers')
         return found_trackers
