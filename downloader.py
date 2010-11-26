@@ -1,5 +1,4 @@
 import urllib2
-import re
 import os
 import subprocess
 import imp
