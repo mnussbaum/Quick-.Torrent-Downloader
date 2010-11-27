@@ -61,10 +61,14 @@ class Downloader(object):
                 tracker_file = tracker_name + ".py"
                 tracker_path = os.path.join(PROGRAM_PATH, 'trackers',
                   tracker_file)
-                source = imp.load_source('find_url', tracker_path)
-                find_url = source.find_url
+                #dynamically load trackers from trackers directory
+                source = imp.load_source('TRACKER_NAME', tracker_path)
+                name = source.TRACKER_NAME
+                tracker_source = imp.load_source(name, tracker_path)
+                tracker_class = eval('tracker_source.%s' % name)
+                tracker = tracker_class()
                 #url is the actual torrent's url on the tracker's site
-                url = find_url(tracker_url, PROGRAM_PATH)
+                url = tracker.extract_download_url(tracker_url)
                 if url:
                     wget_result = os.system(\
                       'wget -O "%s" "%s" -t 2 -T 5' % (file_path, url))
@@ -144,14 +148,15 @@ class Downloader(object):
                 tracker = remove_html_tags(str(possible_tracker)).split()
                 if tracker:
                     #tracker[0] is the name of the tracker
-                    tracker = tracker[0].replace('.com', '')
-                    if tracker in self._trackers:
+                    stripped_tracker = tracker[0].replace('.com', '')
+                    stripped_tracker = stripped_tracker.replace('.org', '')
+                    if stripped_tracker in self._trackers:
                         #link is "href="http://whatever.com"
                         link = str(possible_tracker).split()[1]
                         first_quote = link.index('"') + 1
                         second_quote = link.index('"', first_quote)
                         tracker_url = link[first_quote:second_quote]
-                        found_trackers[tracker] = tracker_url
+                        found_trackers[stripped_tracker] = tracker_url
         if found_trackers == {}:
             raise DownloaderError('No known trackers')
         return found_trackers
