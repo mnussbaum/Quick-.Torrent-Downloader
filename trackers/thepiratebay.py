@@ -1,35 +1,36 @@
-tracker = 'thepiratebay.org'
+import urllib2
 
-def find_url(start_url, program_path):
-	import imp
-	load = imp.load_source('remove_html_tags', program_path+'utils.py')
-	remove_html_tags = load.remove_html_tags
-	
-	start_index = start_url.index('torrent')
-	start_index += 8
-	tracker_num = start_url[start_index:]
-	
-	#load BeautifulSoup to get the name of the torrent for the download url
-	import imp
-	source = imp.load_source('BeautifulSoup', program_path)
-	BeautifulSoup = source.BeautifulSoup
-	
-	import urllib
-	sock = urllib.urlopen(start_url)
-	html = sock.read()
-	sock.close()
-		
-	soup = BeautifulSoup(html)
-	
-	title = soup.find('div', {'id':'title'})
-	url = None
-	if title:
-		title = str(title)
-		title = remove_html_tags(title)
-		title = title.strip()
-		title = title.replace(',', '_')
-		title = title.replace(' ', '_')
-		tracker_name = title
-				
-		url = 'http://torrents.thepiratebay.org/'+tracker_num+'/'+tracker_name+'.'+tracker_num+'.TPB.torrent'
-	return url
+from BeautifulSoup import BeautifulSoup
+
+from errors import DownloaderError
+from trackers.tracker import Tracker
+from utils import remove_html_tags
+
+TRACKER_NAME = "ThePirateBay"
+
+class ThePirateBay(Tracker):
+    def extract_download_url(self, url):
+        start_index = url.index('torrent')
+        start_index += 8
+        pirate_num = url[start_index:]
+        pirate_title = self._pirate_title(url)
+        if not pirate_title:
+            raise DownloaderError('Unable to parse tracker site')
+        download_url = 'http://torrents.thepiratebay.org/'+\
+          '%s/%s.%s.TPB.torrent' % (pirate_num, pirate_title, pirate_num)
+        return download_url
+
+    def _pirate_title(self, url):
+        sock = urllib2.urlopen(url)
+        html = sock.read()
+        sock.close()
+        soup = BeautifulSoup(html)
+        title = soup.find('div', {'id':'title'})
+        pirate_title = None
+        if title:
+            formatted_title = str(title)
+            formatted_title = remove_html_tags(formatted_title)
+            formatted_title = formatted_title.strip()
+            formatted_title = formatted_title.replace(',', '_')
+            pirate_title = formatted_title.replace(' ', '_')
+        return pirate_title

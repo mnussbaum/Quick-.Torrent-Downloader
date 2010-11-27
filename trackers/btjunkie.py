@@ -1,9 +1,11 @@
-tracker = 'btjunkie.org'
+import re
 
-def find_url(start_url, program_path):
-	name = start_url[7:]
-	url = 'http://dl.' + name + '/download.torrent'
-	
-	return url
-	
-	
+from trackers.tracker import Tracker
+
+TRACKER_NAME = "Btjunkie"
+
+class Btjunkie(Tracker):
+    def extract_download_url(self, url):
+        name = url[7:]
+        download_url = 'http://dl.%s/download.torrent' % name
+        return download_url
