@@ -5,7 +5,7 @@ import imp
 
 from BeautifulSoup import BeautifulSoup
 
-from settings import DOWNLOADS_FOLDER, PROGRAM_PATH
+from settings import DOWNLOADS_FOLDER
 from utils import remove_html_tags, remove_entities
 from errors import DownloaderError
 
@@ -16,7 +16,7 @@ class Downloader(object):
 
     def _get_trackers(self):
         """Loads tracker files and populates a dict with them"""
-        trackers_path = os.path.join(PROGRAM_PATH, 'trackers')
+        trackers_path = os.path.join(os.path.dirname(__file__), 'trackers')
         files = os.listdir(trackers_path)
         tracker_files = [file for file in files if file[-4:] != '.pyc' \
           and file != '__init__.py']
@@ -34,7 +34,7 @@ class Downloader(object):
             #results from tracker meta-search
             parsed_general_results = \
               self._parse_general_search(search_results)
-            #identifies the item we want to download
+            #identifies the item to download
             desired_link = self._general_result_link(\
               parsed_general_results, desired_item_name)
             #identifies trackers with desired item
@@ -59,7 +59,7 @@ class Downloader(object):
                 print 'Downloading torrent file from', '%s...' % \
                   tracker_name
                 tracker_file = tracker_name + ".py"
-                tracker_path = os.path.join(PROGRAM_PATH, 'trackers',
+                tracker_path = os.path.join(os.path.dirname(__file__), 'trackers',
                   tracker_file)
                 #dynamically load trackers from trackers directory
                 source = imp.load_source('TRACKER_NAME', tracker_path)
@@ -122,7 +122,7 @@ class Downloader(object):
 
     def _general_result_link(self, parsed_general_results,
       desired_item_name):
-        """Returns a url for the 'choose a tracker' page on torrentz"""
+        """Returns a url for the 'choose a tracker' page on torrentz.com"""
         for name, link in parsed_general_results.items():
             if desired_item_name.lower() in name.lower():
                 return link
@@ -148,10 +148,9 @@ class Downloader(object):
                 tracker = remove_html_tags(str(possible_tracker)).split()
                 if tracker:
                     #tracker[0] is the name of the tracker
-                    stripped_tracker = tracker[0].replace('.com', '')
-                    stripped_tracker = stripped_tracker.replace('.org', '')
+                    stripped_tracker = tracker[0].replace('.com', '').replace('.org', '')
                     if stripped_tracker in self._trackers:
-                        #link is "href="http://whatever.com"
+                        #link is 'href="http://whatever.com'
                         link = str(possible_tracker).split()[1]
                         first_quote = link.index('"') + 1
                         second_quote = link.index('"', first_quote)
