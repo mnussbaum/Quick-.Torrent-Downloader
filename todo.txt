@@ -1,7 +1,3 @@
-Make code comply with PEP 8
-
-Figure out settings
-
 Add README and help
 
 Make installable with setuputils
