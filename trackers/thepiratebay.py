@@ -21,9 +21,12 @@ class ThePirateBay(Tracker):
         return download_url
 
     def _pirate_title(self, url):
-        sock = urllib2.urlopen(url)
-        html = sock.read()
-        sock.close()
+        try:
+            sock = urllib2.urlopen(url)
+            html = sock.read()
+            sock.close()
+        except URLError:
+            raise DownloaderError('Connection issue')
         soup = BeautifulSoup(html)
         title = soup.find('div', {'id':'title'})
         pirate_title = None
