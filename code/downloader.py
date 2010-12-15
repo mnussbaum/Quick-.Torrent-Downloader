@@ -45,6 +45,7 @@ class Downloader(object):
             self._open_torrent(file_path)
         except DownloaderError as error:
            print 'Unable to download -- %s' % str(error)
+           return 1
         return 0
 
     def _download_torrent_file(self, desired_item_name,
