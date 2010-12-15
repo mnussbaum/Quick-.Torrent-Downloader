@@ -33,6 +33,7 @@ FakeTrackerUrlOpen = Mock(return_value=FakeTrackerSock)
 FakeEmptySock = Mock()
 FakeEmptySock.read = Mock(return_value='')
 FakeEmptyUrlOpen = Mock(return_value=FakeEmptySock)
+FakeUrlOpenWithError = Mock(side_effect=urllib2.URLError(''))
 #to mock out system calls running wget
 fake_good_system_call = Mock(return_value=0)
 fake_bad_system_call = Mock(return_value=1)
@@ -126,6 +127,11 @@ class DownloaderTest(unittest.TestCase):
     def test_find_trackers__bad_results(self):
           self.assertRaises(DownloaderError,
             self._downloader_ut._find_trackers, 'http://nada.com')
+            
+    @patch.object(urllib2, 'urlopen', FakeUrlOpenWithError)  
+    def test_find_trackers__URLError(self):
+          self.assertRaises(DownloaderError,
+            self._downloader_ut._find_trackers, self._correct_link)
             
     @patch.object(os, 'system', fake_good_system_call)
     @patch.object(downloader.Downloader, '_get_tracker_object', fake_tracker_giver)
