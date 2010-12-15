@@ -1,10 +1,10 @@
 import re
 
-from trackers.tracker import Tracker
+from trackers.base_tracker import BaseTracker
 
 TRACKER_NAME = "Btjunkie"
 
-class Btjunkie(Tracker):
+class Btjunkie(BaseTracker):
     def extract_download_url(self, url):
         name = url[7:]
         download_url = 'http://dl.%s/download.torrent' % name

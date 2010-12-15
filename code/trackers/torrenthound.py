@@ -1,10 +1,10 @@
 import re
 
-from trackers.tracker import Tracker
+from trackers.base_tracker import BaseTracker
 
 TRACKER_NAME = "Torrenthound"
 
-class Torrenthound(Tracker):
+class Torrenthound(BaseTracker):
     def extract_download_url(self, url):
         p = re.compile('/hash/')
         mid_url = p.sub('/torrent/', url, 1)

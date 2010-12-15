@@ -3,12 +3,12 @@ import urllib2
 from BeautifulSoup import BeautifulSoup
 
 from errors import DownloaderError
-from trackers.tracker import Tracker
+from trackers.base_tracker import BaseTracker
 from utils import remove_html_tags
 
 TRACKER_NAME = "ThePirateBay"
 
-class ThePirateBay(Tracker):
+class ThePirateBay(BaseTracker):
     def extract_download_url(self, url):
         start_index = url.index('torrent')
         start_index += 8
