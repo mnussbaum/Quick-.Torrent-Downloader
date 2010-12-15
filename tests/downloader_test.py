@@ -4,10 +4,19 @@ import sys
 import unittest
 from mock import patch, Mock
 
-from test_path import DOWNLOADER_PATH
-sys.path.append(DOWNLOADER_PATH)
+#get proper paths
+split_path = os.path.abspath(__file__).split('/')
+downloader_index = split_path.index('downloader')
+path = '/'
+for directory in split_path[:downloader_index]:
+    path = os.path.join(path, directory)
+path = os.path.join(path, 'downloader/code/')
+sys.path.append(path)
+path = os.path.join(path, 'trackers/')
+sys.path.append(path)
 
 import downloader
+from base_tracker import BaseTracker
 from settings import DOWNLOADS_FOLDER
 from errors import DownloaderError
 from test_resources.general_search_results import search_results
@@ -24,7 +33,7 @@ FakeTrackerUrlOpen = Mock(return_value=FakeTrackerSock)
 FakeEmptySock = Mock()
 FakeEmptySock.read = Mock(return_value='')
 FakeEmptyUrlOpen = Mock(return_value=FakeEmptySock)
-#to mock out a system call running wget
+#to mock out system calls running wget
 fake_good_system_call = Mock(return_value=0)
 fake_bad_system_call = Mock(return_value=1)
 class FakeChangingSystemCall(object):
@@ -42,13 +51,13 @@ class FakeChangingSystemCall(object):
 changing_system_call = FakeChangingSystemCall()
 #to mock out dynamic tracker loading
 def fake_tracker_giver(*args):
-    return FakeTracker()
-
+    return BaseTracker()
+    
 class DownloaderTest(unittest.TestCase):
     def setUp(self):
         self._mock_listdir = Mock(return_value=['test.py'])
         self._fake_soup = BeautifulSoup(search_results)
-        self._correct_parsed_results = \
+        self._correct_general_results = \
         {'The Beatles Greatest Hits Remastered/2009/MP3 Bubanee':
         'http://www.torrentz.com/0898a4b562c1098eb69b9b801c61a51d788df0f5'}
         self._correct_link = 'http://www.torrentz.com/0898a4b562c109' + \
@@ -66,6 +75,9 @@ class DownloaderTest(unittest.TestCase):
           'thepiratebay': 'http://thepiratebay.org/torrent/5079924',
           'fenopy': 'http://fenopy.com/torrent/The+Beatles+2009+Grea' + \
             'test+Hits+41+Songs+CDRip+Remastered+/MzYzODQxMA'}
+        torrent_file_name ='GreatestHits.torrent'
+        base_file_path = DOWNLOADS_FOLDER
+        self._correct_file_path = os.path.join(base_file_path, torrent_file_name)
         self._downloader_ut = downloader.Downloader()
         
     def test_get_trackers(self):
@@ -82,7 +94,7 @@ class DownloaderTest(unittest.TestCase):
     def test_parse_general_search_results__good_results(self):
         parsed_results = \
           self._downloader_ut._parse_general_search(self._fake_soup)
-        self.assertEquals(self._correct_parsed_results, parsed_results)
+        self.assertEquals(self._correct_general_results, parsed_results)
         
     def test_parse_general_search_results__bad_results(self):
         empty_soup = BeautifulSoup('<html></html>')
@@ -118,12 +130,9 @@ class DownloaderTest(unittest.TestCase):
     @patch.object(os, 'system', fake_good_system_call)
     @patch.object(downloader.Downloader, '_get_tracker_object', fake_tracker_giver)
     def test_download_torrent_file__work_first_time(self):
-        torrent_file_name ='GreatestHits.torrent'
-        base_file_path = DOWNLOADS_FOLDER
-        correct_file_path = os.path.join(base_file_path, torrent_file_name)
         result_file_path = self._downloader_ut._download_torrent_file('Greatest Hits',
           self._correct_trackers)
-        self.assertEquals(correct_file_path, result_file_path)
+        self.assertEquals(self._correct_file_path, result_file_path)
         first_tracker, first_tracker_url = self._correct_trackers.items()[0]
         system_call_args = fake_good_system_call.call_args[0][0].split()
         download_url = system_call_args[3].replace('"', '')
@@ -132,12 +141,9 @@ class DownloaderTest(unittest.TestCase):
     @patch.object(os, 'system', changing_system_call.call)
     @patch.object(downloader.Downloader, '_get_tracker_object', fake_tracker_giver)
     def test_download_torrent_file__work_second_time(self):
-        torrent_file_name ='GreatestHits.torrent'
-        base_file_path = DOWNLOADS_FOLDER
-        correct_file_path = os.path.join(base_file_path, torrent_file_name)
         result_file_path = self._downloader_ut._download_torrent_file('Greatest Hits',
           self._correct_trackers)
-        self.assertEquals(correct_file_path, result_file_path)
+        self.assertEquals(self._correct_file_path, result_file_path)
         first_tracker, first_tracker_url = self._correct_trackers.items()[1]
         system_call_args = changing_system_call.args[0].split()
         download_url = system_call_args[3].replace('"', '')
@@ -150,9 +156,37 @@ class DownloaderTest(unittest.TestCase):
           self._downloader_ut._download_torrent_file, 'Greatest Hits',
           self._correct_trackers)
     
-class FakeTracker(object):
-    def __init__(self):
-        pass
-    
-    def extract_download_url(self, start_url):
-        return start_url
+    @patch.object(downloader.Downloader, '_parse_general_search',
+      Mock())
+    @patch.object(downloader.Downloader, '_general_result_link',
+      Mock())
+    @patch.object(downloader.Downloader, '_find_trackers',
+      Mock())
+    @patch.object(downloader.Downloader, '_download_torrent_file',
+      Mock())
+    @patch.object(downloader.Downloader, '_open_torrent',
+      Mock())
+    def test_download__success(self):
+        result = self._downloader_ut.download('Greatest Hits', 'Greatest Hits')
+        self.assertEquals(result, 0)
+        
+    @patch.object(downloader.Downloader, '_parse_general_search',
+      Mock(side_effect=DownloaderError('')))
+    @patch.object(downloader.Downloader, '_general_result_link',
+      Mock())
+    @patch.object(downloader.Downloader, '_find_trackers',
+      Mock())
+    @patch.object(downloader.Downloader, '_download_torrent_file',
+      Mock())
+    @patch.object(downloader.Downloader, '_open_torrent',
+      Mock())
+    def test_download__no_success(self):
+        result = self._downloader_ut.download('Greatest Hits', 'Greatest Hits')
+        self.assertEquals(result, 1)
+        
+    def test_get_tracker_object(self):
+        correct_url = BaseTracker().extract_download_url('test_url')
+        tracker_path = os.path.join(path, 'base_tracker.py')
+        result_tracker = self._downloader_ut._get_tracker_object(tracker_path)
+        result_tracker_url = result_tracker.extract_download_url('test_url')
+        self.assertEquals(correct_url, result_tracker_url)
