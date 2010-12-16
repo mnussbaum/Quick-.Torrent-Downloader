@@ -54,13 +54,15 @@ class Downloader(object):
         downloaded = False
         for tracker_name, tracker_url in tracker_results.items():
             if not downloaded:
-                torrent_file_name = '%s.torrent' % desired_item_name.replace(' ', '')
+                torrent_file_name = '%s.torrent' % \
+                  desired_item_name.replace(' ', '')
                 base_file_path = DOWNLOADS_FOLDER
                 file_path = os.path.join(base_file_path, torrent_file_name)
                 print 'Downloading torrent file from %s...' % \
                   tracker_name
                 tracker_file = "%s.py" % tracker_name
-                tracker_path = os.path.join(os.path.dirname(__file__), 'trackers',
+                tracker_path = os.path.join(os.path.dirname(__file__),
+                  'trackers',
                   tracker_file)
                 tracker = self._get_tracker_object(tracker_path)
                 #url is the actual torrent's url on the tracker's site
@@ -74,7 +76,7 @@ class Downloader(object):
             return file_path
         else:
             raise DownloaderError('Unable to download from any tracker')
-            
+
     def _get_tracker_object(self, tracker_path):
         '''Dynamically load tracker objects from trackers directory'''
         source = imp.load_source('TRACKER_NAME', tracker_path)
@@ -152,7 +154,8 @@ class Downloader(object):
                 tracker = remove_html_tags(str(possible_tracker)).split()
                 if tracker:
                     #tracker[0] is the name of the tracker
-                    stripped_tracker = tracker[0].replace('.com', '').replace('.org', '')
+                    stripped_tracker = tracker[0].replace('.com',
+                      '').replace('.org', '')
                     if stripped_tracker in self._trackers:
                         #link is 'href="http://whatever.com'
                         link = str(possible_tracker).split()[1]
