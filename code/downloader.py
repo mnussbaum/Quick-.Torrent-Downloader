@@ -79,10 +79,8 @@ class Downloader(object):
 
     def _get_tracker_object(self, tracker_path):
         '''Dynamically load tracker objects from trackers directory'''
-        source = imp.load_source('TRACKER_NAME', tracker_path)
-        name = source.TRACKER_NAME
-        tracker_source = imp.load_source(name, tracker_path)
-        tracker_class = eval('tracker_source.%s' % name)
+        tracker_source = imp.load_source('Tracker', tracker_path)
+        tracker_class = eval('tracker_source.Tracker')
         return tracker_class()
 
     def _torrentz_search(self, search_term):
