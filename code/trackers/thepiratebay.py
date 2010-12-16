@@ -8,6 +8,7 @@ from utils import remove_html_tags
 
 class Tracker(BaseTracker):
     def __init__(self):
+        super(Tracker, self).__init__()
         self.name = 'ThePirateBay'
 
     def extract_download_url(self, url):

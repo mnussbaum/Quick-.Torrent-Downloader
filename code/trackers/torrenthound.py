@@ -4,6 +4,7 @@ from trackers.base_tracker import BaseTracker
 
 class Tracker(BaseTracker):
     def __init__(self):
+        super(Tracker, self).__init__()
         self.name = 'TorrentHound'
 
     def extract_download_url(self, url):
