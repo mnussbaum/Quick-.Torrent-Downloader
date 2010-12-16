@@ -1,7 +1,6 @@
 import sys
 import os
 import unittest
-from mock import Mock, patch
 
 #get proper paths
 split_path = os.path.abspath(__file__).split('/')
@@ -18,6 +17,9 @@ class TestBaseTracker(unittest.TestCase):
     def setUp(self):
         self._base_tracker_ut = BaseTracker()
 
-    def test_tracker_name(self):
-        tracker_name = self._base_tracker_ut.TRACKER_NAME
-        self.assertTrue(tracker_name)
+    def test_name(self):
+        self.assertEquals('BaseTracker', self._base_tracker_ut.name)
+
+    def test_extract_url(self):
+        self.assertEquals('test',
+          self._base_tracker_ut.extract_download_url('test'))
