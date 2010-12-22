@@ -1,7 +1,8 @@
+Make torrent search engine a plugin
+
 Add README and help
 
 Make installable with setuputils
 
-Check for wget, maybe do that in install though
-
-Add tests 
+Check for wget, maybe do that in install though:
+s = subprocess.Popen(['which', 'wgets'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
