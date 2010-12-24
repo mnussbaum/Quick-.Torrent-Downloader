@@ -68,14 +68,32 @@ class Downloader(object):
                 #url is the actual torrent's url on the tracker's site
                 url = tracker.extract_download_url(tracker_url)
                 if url:
-                    wget_result = os.system(\
-                      'wget -O "%s" "%s" -t 2 -T 5' % (file_path, url))
-                    if wget_result == 0:
-                        downloaded = True
+                    try:
+                        FIVE_SECONDS = 5
+                        web_file = urllib2.urlopen(url, timeout=FIVE_SECONDS)
+                        data = web_file.read()
+                        web_file.close()
+                        if self._valid_torrent_file(data):
+                            try:
+                                out_file = open(file_path, 'w')
+                                out_file.write(data)
+                                out_file.close()
+                                downloaded = True
+                            except IOError:
+                                downloaded = False
+                    except urllib2.URLError:
+                        downloaded = False
         if downloaded:
             return file_path
         else:
             raise DownloaderError('Unable to download from any tracker')
+
+    def _valid_torrent_file(self, data):
+        PROPER_START = 'd8:announce'
+        if data[:11] in PROPER_START:
+            return True
+        else:
+            return False
 
     def _get_tracker_object(self, tracker_path):
         '''Dynamically load tracker objects from trackers directory'''
