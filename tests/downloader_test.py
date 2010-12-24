@@ -10,7 +10,7 @@ downloader_index = split_path.index('downloader')
 path = '/'
 for directory in split_path[:downloader_index]:
     path = os.path.join(path, directory)
-path = os.path.join(path, 'downloader/code/')
+path = os.path.join(path, 'downloader/src/')
 sys.path.append(path)
 path = os.path.join(path, 'trackers/')
 sys.path.append(path)
