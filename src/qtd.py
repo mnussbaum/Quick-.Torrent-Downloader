@@ -12,6 +12,7 @@ def main(args):
         desired_item_name = raw_input('Item to Find: ')
     downloader = Downloader()
     downloader.download(search_term, desired_item_name)
+    return 0
 
 if __name__ == "__main__":
     main(sys.argv[1:])
