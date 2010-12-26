@@ -16,7 +16,8 @@ class Downloader(object):
 
     def _get_trackers(self):
         """Loads tracker files and populates a dict with them"""
-        trackers_path = os.path.join(os.path.dirname(__file__), 'trackers')
+        trackers_path = os.path.join(os.path.dirname(__file__),
+          'trackers')
         files = os.listdir(trackers_path)
         tracker_files = [file for file in files if file[-4:] != '.pyc' \
           and file != '__init__.py']
@@ -50,35 +51,32 @@ class Downloader(object):
 
     def _download_torrent_file(self, desired_item_name,
       tracker_results):
-        ''''Uses wget to download a .torrent file'''
         downloaded = False
         for tracker_name, tracker_url in tracker_results.items():
             if not downloaded:
                 torrent_file_name = '%s.torrent' % \
                   desired_item_name.replace(' ', '')
-                base_file_path = DOWNLOADS_FOLDER
-                file_path = os.path.join(base_file_path, torrent_file_name)
+                file_path = os.path.join(DOWNLOADS_FOLDER,
+                  torrent_file_name)
                 print 'Downloading torrent file from %s...' % \
                   tracker_name
                 tracker_file = "%s.py" % tracker_name
                 tracker_path = os.path.join(os.path.dirname(__file__),
-                  'trackers',
-                  tracker_file)
+                  'trackers', tracker_file)
                 tracker = self._get_tracker_object(tracker_path)
                 #url is the actual torrent's url on the tracker's site
                 url = tracker.extract_download_url(tracker_url)
                 if url:
                     try:
                         FIVE_SECONDS = 5
-                        web_file = urllib2.urlopen(url, timeout=FIVE_SECONDS)
+                        web_file = urllib2.urlopen(url,
+                          None, FIVE_SECONDS)
                         data = web_file.read()
                         web_file.close()
                         if self._valid_torrent_file(data):
                             try:
-                                out_file = open(file_path, 'w')
-                                out_file.write(data)
-                                out_file.close()
-                                downloaded = True
+                               self._write_file(file_path, data)
+                               downloaded = True
                             except IOError:
                                 downloaded = False
                     except urllib2.URLError:
@@ -87,6 +85,11 @@ class Downloader(object):
             return file_path
         else:
             raise DownloaderError('Unable to download from any tracker')
+
+    def _write_file(self, file_path, data):
+        out_file = open(file_path, 'w')
+        out_file.write(data)
+        out_file.close()
 
     def _valid_torrent_file(self, data):
         PROPER_START = 'd8:announce'
@@ -144,7 +147,8 @@ class Downloader(object):
 
     def _general_result_link(self, parsed_general_results,
       desired_item_name):
-        """Returns a url for the 'choose a tracker' page on torrentz.com"""
+        """Returns a url for the 'choose a tracker' page on
+        torrentz.com"""
         for name, link in parsed_general_results.items():
             if desired_item_name.lower() in name.lower():
                 return link
