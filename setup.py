@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 setup(
     name = "Quick .Torrent Downloader",
     version = "0.1",
-    packages = find_packages('src'),
-    package_dir = {'':'src'},
+    packages = find_packages('.'),
+    package_dir = {'':'.'},
     include_package_data = True,
     install_requires = ['BeautifulSoup>=3.2'],
     entry_points={
@@ -17,8 +17,7 @@ setup(
     test_suite = "tests",
     package_data = {
         '': ['*.txt'],
-        }
-
+        },
     author = "Michael Nussbaum",
     author_email = "michaelnussbaum08@gmail.com",
     description = "Command line tool to find and download .torrent files",
