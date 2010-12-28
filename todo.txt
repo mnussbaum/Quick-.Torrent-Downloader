@@ -2,6 +2,10 @@ Add option to download actual content from command line, not just open desired c
 
 Make torrent search engine a plugin
 
+Check out tests
+
 Add README and help
 
-Make installable with setuputils
+Deal with licensing and registration, copyright
+
+Add install script to get config info --  license='LICENSE.txt', long_description=open('README.txt').read()

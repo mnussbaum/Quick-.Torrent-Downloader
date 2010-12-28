@@ -5,7 +5,8 @@ import imp
 
 from BeautifulSoup import BeautifulSoup
 
-from settings import DOWNLOADS_FOLDER
+from settings import downloads_folder
+import utils
 from utils import remove_html_tags, remove_entities
 from errors import DownloaderError
 
@@ -30,6 +31,8 @@ class Downloader(object):
     def download(self, search_term, desired_item_name):
         """Tries to download something with the desired_item_name
         from the torrentz results after searching for search_term"""
+        final_downloads_folder = \
+          self._find_downloads_folder(downloads_folder)
         search_results = self._torrentz_search(search_term)
         try:
             #results from tracker meta-search
@@ -42,21 +45,38 @@ class Downloader(object):
             tracker_results = self._find_trackers(desired_link)
             #downloads .torrent file of item to file_path
             file_path = self._download_torrent_file(
-              desired_item_name, tracker_results)
+              desired_item_name, tracker_results, final_downloads_folder)
             self._open_torrent(file_path)
         except DownloaderError as error:
            print 'Unable to download -- %s' % str(error)
            return 1
         return 0
 
+    def _find_downloads_folder(self, downloads_folder, first_attempt=True):
+        if not first_attempt:
+            print "That folder doesn't exist..."
+        if not downloads_folder:
+            message = 'Please specify a folder to download the '
+            message +=  '.torrent file into:\n'
+            downloads_folder = utils.get_input(message)
+            if os.path.isdir(downloads_folder):
+                settings_path = os.path.join(os.path.dirname(__file__),
+                  'settings.py')
+                utils.write_file(settings_path,
+                  "downloads_folder = '%s'" % downloads_folder)
+            else:
+                downloads_folder = \
+                  self._find_downloads_folder(None, first_attempt=False)
+        return downloads_folder
+
     def _download_torrent_file(self, desired_item_name,
-      tracker_results):
+      tracker_results, final_downloads_folder):
         downloaded = False
         for tracker_name, tracker_url in tracker_results.items():
             if not downloaded:
                 torrent_file_name = '%s.torrent' % \
                   desired_item_name.replace(' ', '')
-                file_path = os.path.join(DOWNLOADS_FOLDER,
+                file_path = os.path.join(final_downloads_folder,
                   torrent_file_name)
                 print 'Downloading torrent file from %s...' % \
                   tracker_name
@@ -75,7 +95,7 @@ class Downloader(object):
                         web_file.close()
                         if self._valid_torrent_file(data):
                             try:
-                               self._write_file(file_path, data)
+                               utils.write_file(file_path, data)
                                downloaded = True
                             except IOError:
                                 downloaded = False
@@ -85,11 +105,6 @@ class Downloader(object):
             return file_path
         else:
             raise DownloaderError('Unable to download from any tracker')
-
-    def _write_file(self, file_path, data):
-        out_file = open(file_path, 'w')
-        out_file.write(data)
-        out_file.close()
 
     def _valid_torrent_file(self, data):
         PROPER_START = 'd8:announce'

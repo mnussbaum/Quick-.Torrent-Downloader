@@ -16,7 +16,6 @@ path = os.path.join(path, 'trackers/')
 sys.path.append(path)
 
 import downloader
-from settings import DOWNLOADS_FOLDER
 from errors import DownloaderError
 from test_resources.general_search_results import search_results
 from test_resources.tracker_results import tracker_results
@@ -74,7 +73,8 @@ class DownloaderTest(unittest.TestCase):
           'fenopy': 'http://fenopy.com/torrent/The+Beatles+2009+Grea' + \
             'test+Hits+41+Songs+CDRip+Remastered+/MzYzODQxMA'}
         torrent_file_name ='GreatestHits.torrent'
-        self._correct_file_path = os.path.join(DOWNLOADS_FOLDER,
+        self._downloads_folder = os.path.dirname(__file__)
+        self._correct_file_path = os.path.join(self._downloads_folder,
           torrent_file_name)
         self._downloader_ut = downloader.Downloader()
 
@@ -121,10 +121,10 @@ class DownloaderTest(unittest.TestCase):
         self.assertDictEqual(self._correct_trackers, found_trackers)
 
     @patch.object(urllib2, 'urlopen', FakeEmptyUrlOpen)
-    @patch.object(downloader.Downloader, '_write_file', Mock)
     def test_find_trackers__bad_results(self):
-          self.assertRaises(DownloaderError,
-            self._downloader_ut._find_trackers, 'http://nada.com')
+        with patch('utils.write_file', Mock):
+            self.assertRaises(DownloaderError,
+              self._downloader_ut._find_trackers, 'http://nada.com')
 
     @patch.object(urllib2, 'urlopen', FakeUrlOpenWithError)
     def test_find_trackers__URLError(self):
@@ -132,66 +132,71 @@ class DownloaderTest(unittest.TestCase):
             self._downloader_ut._find_trackers, self._correct_link)
 
     @patch.object(urllib2, 'urlopen', FakeEmptyUrlOpen)
-    @patch.object(downloader.Downloader, '_write_file', Mock)
+    @patch.object(downloader.Downloader, '_find_downloads_folder', Mock())
     @patch.object(downloader.Downloader, '_get_tracker_object',
       fake_tracker_giver)
     def test_download_torrent_file__work_first_time(self):
-        result_file_path = \
-          self._downloader_ut._download_torrent_file('Greatest Hits',
-          self._correct_trackers)
-        self.assertEquals(self._correct_file_path, result_file_path)
-        first_tracker, first_tracker_url = \
-          self._correct_trackers.items()[0]
-        download_url = FakeEmptyUrlOpen.call_args[0][0]
-        self.assertEquals(download_url, first_tracker_url)
+        with patch('utils.write_file', Mock):
+            result_file_path = \
+              self._downloader_ut._download_torrent_file('Greatest Hits',
+              self._correct_trackers, self._downloads_folder)
+            self.assertEquals(self._correct_file_path, result_file_path)
+            first_tracker, first_tracker_url = \
+              self._correct_trackers.items()[0]
+            download_url = FakeEmptyUrlOpen.call_args[0][0]
+            self.assertEquals(download_url, first_tracker_url)
 
     @patch.object(urllib2, 'urlopen', fake_changing_url_open.call)
-    @patch.object(downloader.Downloader, '_write_file', Mock)
+    @patch.object(downloader.Downloader, '_find_downloads_folder', Mock())
     @patch.object(downloader.Downloader, '_get_tracker_object',
       fake_tracker_giver)
     def test_download_torrent_file__work_second_time(self):
-        result_file_path = \
-          self._downloader_ut._download_torrent_file('Greatest Hits',
-          self._correct_trackers)
-        self.assertEquals(self._correct_file_path, result_file_path)
-        first_tracker, first_tracker_url = \
-          self._correct_trackers.items()[1]
-        download_url = fake_changing_url_open.args[0]
-        self.assertEquals(download_url, first_tracker_url)
+        with patch('utils.write_file', Mock):
+            result_file_path = \
+              self._downloader_ut._download_torrent_file('Greatest Hits',
+              self._correct_trackers, self._downloads_folder)
+            self.assertEquals(self._correct_file_path, result_file_path)
+            first_tracker, first_tracker_url = \
+              self._correct_trackers.items()[1]
+            download_url = fake_changing_url_open.args[0]
+            self.assertEquals(download_url, first_tracker_url)
 
     @patch.object(urllib2, 'urlopen', FakeUrlOpenWithError)
+    @patch.object(downloader.Downloader, '_find_downloads_folder', Mock())
     @patch.object(downloader.Downloader, '_get_tracker_object',
       fake_tracker_giver)
     def test_download_torrent_file__doesnt_work(self):
         self.assertRaises(DownloaderError,
           self._downloader_ut._download_torrent_file, 'Greatest Hits',
-          self._correct_trackers)
+          self._correct_trackers, self._downloads_folder)
 
     @patch.object(downloader.Downloader, '_torrentz_search', Mock())
     @patch.object(downloader.Downloader, '_parse_general_search', Mock())
     @patch.object(downloader.Downloader, '_general_result_link', Mock())
+    @patch.object(downloader.Downloader, '_find_downloads_folder', Mock())
     @patch.object(downloader.Downloader, '_find_trackers', Mock())
     @patch.object(downloader.Downloader, '_download_torrent_file', Mock())
     @patch.object(downloader.Downloader, '_open_torrent', Mock())
-    @patch.object(downloader.Downloader, '_write_file', Mock)
     def test_download__success(self):
-        result = self._downloader_ut.download('Greatest Hits',
-          'Greatest Hits')
-        result = self._downloader_ut.download('Greatest Hits',
-          'Greatest Hits')
+        with patch('utils.write_file', Mock):
+            result = self._downloader_ut.download('Greatest Hits',
+              'Greatest Hits')
+            result = self._downloader_ut.download('Greatest Hits',
+              'Greatest Hits')
 
     @patch.object(downloader.Downloader, '_torrentz_search', Mock())
+    @patch.object(downloader.Downloader, '_find_downloads_folder', Mock())
     @patch.object(downloader.Downloader, '_parse_general_search',
       Mock(side_effect=DownloaderError('')))
     @patch.object(downloader.Downloader, '_general_result_link', Mock())
     @patch.object(downloader.Downloader, '_find_trackers', Mock())
     @patch.object(downloader.Downloader, '_download_torrent_file', Mock())
     @patch.object(downloader.Downloader, '_open_torrent', Mock())
-    @patch.object(downloader.Downloader, '_write_file', Mock)
     def test_download__no_success(self):
-        result = self._downloader_ut.download('Greatest Hits',
-          'Greatest Hits')
-        self.assertEquals(result, 1)
+        with patch('utils.write_file', Mock):
+            result = self._downloader_ut.download('Greatest Hits',
+              'Greatest Hits')
+            self.assertEquals(result, 1)
 
     def test_get_tracker_object(self):
         correct_url = Tracker().extract_download_url('test_url')
@@ -202,3 +207,16 @@ class DownloaderTest(unittest.TestCase):
         result_tracker_url = \
           result_tracker.extract_download_url('test_url')
         self.assertEquals(correct_url, result_tracker_url)
+
+    def test_find_downloads_folder__works(self):
+        result = self._downloader_ut._find_downloads_folder(\
+          self._downloads_folder)
+        self.assertEquals(result, self._downloads_folder)
+
+    def test_find_downloads_folder__need_input(self):
+        test_dir = os.path.dirname(__file__)
+        with patch('utils.get_input',
+          Mock(return_value=test_dir)):
+            result = self._downloader_ut._find_downloads_folder(\
+              None, first_attempt=False)
+            self.assertEquals(result, test_dir)

@@ -1,6 +1,15 @@
 import re
 from htmlentitydefs import name2codepoint
 
+def get_input(message):
+    input = raw_input(message)
+    return input
+
+def write_file(file_path, data):
+    out_file = open(file_path, 'w')
+    out_file.write(data)
+    out_file.close()
+
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
     return p.sub('', data)

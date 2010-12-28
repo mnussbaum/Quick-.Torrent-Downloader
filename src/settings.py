@@ -1,1 +1,1 @@
-DOWNLOADS_FOLDER = '/Users/michaelnussbaum08/Downloads/'
+downloads_folder = '/Users/michaelnussbaum08/Documents/Other/downloader/tests'
