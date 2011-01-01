@@ -13,11 +13,9 @@ def write_file(file_path, data):
         out_file.write(data)
         out_file.close()
     except IOError as error:
-        if '13' in error:
-            raise DownloaderError('Need higher permissions to write' +
-              'settings')
-        else:
-            raise DownloaderError('File error')
+        msg = 'Error, probably need permissions to write settings,' + \
+          ' please run as root'
+        print msg
 
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
