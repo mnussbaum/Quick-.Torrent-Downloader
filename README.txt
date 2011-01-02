@@ -5,3 +5,15 @@ your default BitTorrent client.
 Usage:
     -s  search term
     -r  name of result to download
+
+Downloads from:
+    thepiratebay.org
+    www.btmon.com
+    btjunkie.org
+    fenopy.com
+    www.torrenthound.com
+
+Additional trackers can easily be added by subclassing BaseTracker and
+following the model of the other trackers.
+
+Search results are from torrentz.eu
