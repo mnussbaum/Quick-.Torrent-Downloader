@@ -21,6 +21,22 @@ setup(
     author = "Michael Nussbaum",
     author_email = "michaelnussbaum08@gmail.com",
     description = "Command line tool to find and download .torrent files",
-    license = "BSD",
-    keywords = "torrent downloader finder .torrent",
+    long_description = "A command line tool that begins the torrenting" + \
+      " process by searching for a given term and result name, " + \
+      "downloading the .torrent file and opening it in your default " + \
+      "BitTorrent client.",
+    license = "LICENSE.txt",
+    keywords = ["torrent", ".torrent downloader", '.torrent finder',
+      ".torrent"],
+    platform = "Any",
+    url = "https://github.com/michaelnussbaum08/Quick-.Torrent-Downloader",
+    classifiers = [
+        "Development Status :: 4 - Beta",
+        "Environment :: Console",
+        "Intended Audience :: End Users/Desktop",
+        "License :: OSI Approved :: BSD License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python"
+    ]
 )
