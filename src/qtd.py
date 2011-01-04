@@ -23,8 +23,11 @@ def main():
             print usage
             return 0
     if not desired_item_name or not search_term:
-        search_term = raw_input('Search Term: ')
-        desired_item_name = raw_input('Desired Item Name: ')
+        try:
+            search_term = raw_input('Search Term: ')
+            desired_item_name = raw_input('Desired Item Name: ')
+        except EOFError:
+            return 0
     downloader = Downloader()
     downloader.download(search_term, desired_item_name)
     return 0
