@@ -170,7 +170,7 @@ class Downloader(object):
                 if tracker:
                     #tracker[0] is the name of the tracker
                     stripped_tracker = tracker[0].replace('.com',
-                      '').replace('.org', '')
+                      '').replace('.org', '').replace('.se', '')
                     if stripped_tracker in self._trackers:
                         #link is 'href="http://whatever.com'
                         link = str(possible_tracker).split()[1]
