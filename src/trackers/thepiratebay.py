@@ -18,7 +18,7 @@ class Tracker(BaseTracker):
         pirate_title = self._pirate_title(url)
         if not pirate_title:
             raise DownloaderError('Unable to parse tracker site')
-        download_url = 'http://torrents.thepiratebay.org/'+\
+        download_url = 'http://torrents.thepiratebay.se/'+\
           '%s/%s.%s.TPB.torrent' % (pirate_num, pirate_title, pirate_num)
         return download_url
 
